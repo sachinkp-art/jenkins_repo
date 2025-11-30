@@ -7,3 +7,4 @@ else
 	echo "You ar not eligible"
 fi
 echo " change time stamp $(date)" >> log
+echo "added new line"
