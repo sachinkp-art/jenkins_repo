@@ -6,4 +6,4 @@ if [ $a -gt 18 ];then
 else
 	echo "You ar not eligible"
 fi
-echo "time stamp $(date)" >> log
+echo " change time stamp $(date)" >> log
