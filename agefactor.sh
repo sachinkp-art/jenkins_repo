@@ -8,3 +8,4 @@ else
 fi
 echo " change time stamp $(date)" >> log
 echo "added new line"
+echo "added new line for check pollscm"
