@@ -1,36 +1,118 @@
 pipeline {
-agent any
-  stages {
-    stage ('parallel running test and building the application') {
-      parallel {
-        stage ('Build application') {
-          steps {
-            echo "starting build"
-            sh '''
-            echo "compiling application"
-            sleep 5
-            echo "build completed"
-            '''
-          }
-        }
-        stage ('running test') {
-          steps {
-            echo "starting test"
-            sh '''
-            echo "running unit test"
-            sleep 5
-            echo "test completed"
-            '''
-          }
-        }
-      }
-    }  
-    stage ('post step') {
-      steps {
-        echo "Buils and Test has completed parallely"
-      }
-    }  
+  agent any                       // run on any available agent
+
+  environment {
+    // Example env vars (optional)
+    APP_NAME = "my-app"
+    BUILD_DIR = "build"
   }
- }
- 
+
+  options {
+    // keep only last 10 builds
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    // timestamps in logs
+    timestamps()
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        echo "Checking out source..."
+        checkout scm
+      }
+    }
+
+    stage('Prepare') {
+      steps {
+        echo "Preparing workspace..."
+        sh 'mkdir -p ${BUILD_DIR} || true'
+      }
+    }
+
+    stage('Parallel Build & Test') {
+      parallel {
+        stage('Build') {
+          steps {
+            echo "Building application..."
+            // replace with real build commands e.g. mvn -B -DskipTests package
+            sh '''
+              echo "Compiling..."
+              sleep 4
+              echo "Build done"
+              mkdir -p ${BUILD_DIR}/artifacts
+              echo "artifact" > ${BUILD_DIR}/artifacts/sample.txt
+            '''
+            // example: archive artifacts inside the build step if you want
+            archiveArtifacts artifacts: "${BUILD_DIR}/artifacts/**", allowEmptyArchive: true
+          }
+          post {
+            always { echo "Build stage finished." }
+          }
+        }
+
+        stage('Unit Tests') {
+          steps {
+            echo "Running unit tests..."
+            // replace with real test command e.g. mvn test
+            sh '''
+              echo "Testing..."
+              sleep 6
+              echo "Tests finished"
+              mkdir -p test-results
+              printf '<testsuite tests="1"><testcase classname="sample" name="t1"/></testsuite>' > test-results/junit.xml
+            '''
+            junit allowEmptyResults: true, testResults: 'test-results/*.xml'
+          }
+          post {
+            always { echo "Tests stage finished." }
+            failure { echo "Unit tests failed — see JUnit report" }
+          }
+        }
+
+        stage('Lint') {
+          steps {
+            echo "Running linter..."
+            // replace or remove
+            sh '''
+              echo "Linting..."
+              sleep 3
+              echo "Lint OK"
+            '''
+          }
+          post {
+            always { echo "Lint stage finished." }
+          }
+        }
+      } // end parallel
+    } // end Parallel Build & Test
+
+    stage('Integration or Packaging') {
+      steps {
+        echo "Packaging or integration steps..."
+        sh '''
+          echo "Packaging..."
+          sleep 2
+          echo "Package ready"
+        '''
+      }
+    }
+  } // stages
+
+  post {
+    success {
+      echo "Pipeline completed successfully!"
+    }
+    unstable {
+      echo "Pipeline completed but some tests were unstable."
+    }
+    failure {
+      echo "Pipeline failed!"
+    }
+    cleanup {
+      echo "Cleaning workspace..."
+      cleanWs()
+    }
+  }
+}
+
     
