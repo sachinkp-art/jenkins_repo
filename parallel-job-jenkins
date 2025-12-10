@@ -1,0 +1,36 @@
+pipeline {
+agent any
+  stages {
+    stage ('parallel running test and building the application') {
+      parallel {
+        stage ('Build application') {
+          steps {
+            echo "starting build"
+            sh '''
+            echo "compiling application"
+            sleep 5
+            echo "build completed"
+            '''
+          }
+        }
+        stage ('running test') {
+          steps {
+            echo "starting test"
+            sh '''
+            echo "running unit test"
+            sleep 5
+            echo "test completed"
+            '''
+          }
+        }
+      }
+    }  
+    stage ('post step') {
+      steps {
+        echo "Buils and Test has completed parallely"
+      }
+    }  
+  }
+ }
+ 
+    
