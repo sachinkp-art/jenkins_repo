@@ -1,36 +1,39 @@
 pipeline {
-agent any
-  stages {
-    stage ('parallel running test and building the application') {
-      parallel {
-        stage ('Build application') {
-          steps {
-            echo "starting build"
-            sh '''
-            echo "compiling application"
-            sleep 5
-            echo "build completed"
-            '''
-          }
+    agent any
+
+    stages {
+        stage('Parallel Build & Test') {
+            parallel {
+                stage('Build Application') {
+                    steps {
+                        echo "Starting Build..."
+                        sh '''
+                            echo "Compiling application..."
+                            sleep 5
+                            echo "Build completed!"
+                        '''
+                    }
+                }
+
+                stage('Run Tests') {
+                    steps {
+                        echo "Starting Tests..."
+                        sh '''
+                            echo "Running unit tests..."
+                            sleep 5
+                            echo "Tests completed!"
+                        '''
+                    }
+                }
+            }
         }
-        stage ('running test') {
-          steps {
-            echo "starting test"
-            sh '''
-            echo "running unit test"
-            sleep 5
-            echo "test completed"
-            '''
-          }
+
+        stage('Post Steps') {
+            steps {
+                echo "Build and Test stages completed in parallel!"
+            }
         }
-      }
-    }  
-    stage ('post step') {
-      steps {
-        echo "Buils and Test has completed parallely"
-      }
-    }  
-  }
- }
- 
+    }
+}
+
     
